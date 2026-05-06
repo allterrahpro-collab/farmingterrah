@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terrah — B2B Farming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ef;--s:#fff;--s2:#f0ede8;--s3:#e8e4de;--b:rgba(0,0,0,.07);--b2:rgba(0,0,0,.14);--t:#1a1714;--t2:#6b6560;--t3:#a09890;--gr:#2d5016;--grl:#e8f2dc;--am:#854f0b;--aml:#fef3c7;--rd:#991b1b;--rdl:#fee2e2;--bl:#1e3a5f;--bll:#deeaf7;--r:7px;--rl:11px;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+nav{background:var(--s);border-bottom:1px solid var(--b);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.logo{font-size:14px;font-weight:600;letter-spacing:-.02em}
+.logo em{color:var(--gr);font-style:normal}
+.nav-r{display:flex;align-items:center;gap:10px}
+.sync{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+.dot{width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0}
+.dot.spin{background:var(--am);animation:blink 1s infinite}
+.dot.err{background:var(--rd)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{padding:5px 12px;font-size:12px;font-family:inherit;background:var(--s);border:1px solid var(--b2);border-radius:var(--r);color:var(--t2);cursor:pointer;transition:.12s}
+.btn:hover{background:var(--s2);color:var(--t)}
+.main{padding:20px 28px;max-width:1360px;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:14px 16px;cursor:pointer;transition:box-shadow .12s,border-color .12s;user-select:none}
+.kpi:hover{border-color:var(--b2)}
+.kpi.sel{box-shadow:0 0 0 2px currentColor}
+.kpi-l{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:5px}
+.kpi-v{font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.kpi-s{font-size:11px;color:var(--t3);margin-top:3px}
+.kpi-v.r{color:var(--rd)}.kpi-v.a{color:var(--am)}.kpi-v.g{color:var(--gr)}.kpi-v.o{color:var(--t3)}
+.alert{background:var(--rdl);border:1px solid #fca5a5;border-radius:var(--r);padding:9px 14px;font-size:13px;color:var(--rd);margin-bottom:14px;display:none}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden}
+.card-head{padding:14px 18px 0;border-bottom:1px solid var(--b)}
+.tabs{display:flex;gap:2px}
+.tab{padding:8px 16px;font-size:13px;font-family:inherit;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--t2);cursor:pointer;margin-bottom:-1px;transition:.12s}
+.tab:hover{color:var(--t)}
+.tab.on{color:var(--gr);border-bottom-color:var(--gr);font-weight:500}
+.tc{display:inline-block;background:var(--s2);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;color:var(--t3)}
+.tab.on .tc{background:var(--grl);color:var(--gr)}
+.toolbar{display:flex;gap:10px;padding:12px 16px;align-items:flex-start;flex-wrap:wrap;border-bottom:1px solid var(--b);background:var(--s)}
+.toolbar input[type=text]{font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);outline:none;flex:1;min-width:150px}
+.toolbar input:focus{border-color:var(--gr)}
+.ms{display:flex;flex-direction:column;gap:5px}
+.ms-lbl{font-size:11px;color:var(--t3);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{padding:4px 11px;font-size:12px;font-family:inherit;background:var(--s2);border:1px solid var(--b);border-radius:20px;color:var(--t2);cursor:pointer;transition:.12s;white-space:nowrap;user-select:none}
+.chip:hover{border-color:var(--b2);color:var(--t)}
+.chip.cat-actif.on{background:var(--grl);border-color:var(--gr);color:var(--gr);font-weight:500}
+.chip.cat-relance.on{background:var(--aml);border-color:var(--am);color:var(--am);font-weight:500}
+.chip.cat-churn.on{background:#fee2e2;border-color:#f87171;color:#7f1d1d;font-weight:500}
+.chip.cat-out.on{background:var(--s3);border-color:var(--b2);color:var(--t2);font-weight:500}
+.chip.prod.on{background:var(--bll);border-color:#93c5fd;color:var(--bl);font-weight:500}
+.sort-sel{font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);outline:none}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:11px;font-weight:500;color:var(--t3);letter-spacing:.04em;text-transform:uppercase;padding:9px 12px;background:var(--s2);border-bottom:1px solid var(--b);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--b);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#faf9f7}
+tbody tr.is-out td{opacity:.35}
+.bdg{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.br{background:var(--rdl);color:var(--rd)}.ba{background:var(--aml);color:var(--am)}.bg{background:var(--grl);color:var(--gr)}.bx{background:var(--s2);color:var(--t3)}.bch{background:#fee2e2;color:#7f1d1d}
+.bar-r{display:flex;align-items:center;gap:7px}
+.bar-bg{flex:1;height:5px;background:var(--s2);border-radius:3px;overflow:hidden;min-width:50px}
+.bar-f{height:100%;border-radius:3px}
+.tog{width:30px;height:17px;border-radius:9px;background:var(--b2);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .2s}
+.tog.on{background:var(--rd)}.tog.on::after{transform:translateX(13px)}
+.empty{text-align:center;padding:48px;color:var(--t3);font-size:13px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:300;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(500px,95vw);background:var(--s);border-left:1px solid var(--b);z-index:301;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.panel.open{transform:translateX(0)}
+.ph{padding:18px 20px 14px;border-bottom:1px solid var(--b);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-shrink:0}
+.pt{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.ps{font-size:12px;color:var(--t3);margin-top:3px}
+.px{background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;line-height:1;padding:2px}
+.px:hover{color:var(--t)}
+.pb{overflow-y:auto;flex:1;padding:20px}
+.psect{margin-bottom:24px}
+.pst{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.mrow{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.mlbl{width:52px;color:var(--t2);flex-shrink:0;font-size:12px}
+.mbb{flex:1;height:8px;background:var(--s2);border-radius:4px;overflow:hidden}
+.mbf{height:100%;border-radius:4px;background:var(--gr)}
+.mv{width:52px;text-align:right;font-size:12px;color:var(--t2);flex-shrink:0;font-family:'DM Mono',monospace}
+.crow{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b)}
+.crow:last-child{border-bottom:none}
+.cn{font-weight:500;font-size:13px}.cm{font-size:11px;color:var(--t3);margin-top:1px}
+.cv{font-size:12px;color:var(--t2);font-family:'DM Mono',monospace;white-space:nowrap}
+.chart-card{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:18px 22px;margin-top:16px}
+.chart-card h3{font-size:13px;font-weight:500;margin-bottom:14px}
+.prod-row{cursor:pointer}
+.prod-link{font-size:11px;color:var(--t3)}
+thead th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+thead th.sortable:hover{color:var(--t2)}
+thead th.sortable.asc::after{content:' ↑';color:var(--gr)}
+thead th.sortable.desc::after{content:' ↓';color:var(--gr)}
+.cname-link{cursor:pointer;border-bottom:1px dashed var(--b2);display:inline}
+.cname-link:hover{color:var(--gr)}
+/* Client panel */
+.cp-stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.cp-kpi{background:var(--s2);border-radius:var(--r);padding:10px 12px}
+.cp-kpi-l{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;font-weight:500;margin-bottom:3px}
+.cp-kpi-v{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.cp-prod-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b);font-size:13px}
+.cp-prod-row:last-child{border-bottom:none}
+.cp-hist-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px}
+.cp-hist-date{width:68px;color:var(--t3);flex-shrink:0}
+.cp-hist-text{flex:1;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">terrah <em>·</em> farming b2b</div>
+  <div class="nav-r">
+    <div class="sync"><div class="dot spin" id="dot"></div><span id="syncTxt">Chargement…</span></div>
+    <button class="btn" onclick="loadData()">↻ Actualiser</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="kpis">
+    <div class="kpi" id="kpi-actif" onclick="toggleKpi('actif')">
+      <div class="kpi-l">Clients actifs</div><div class="kpi-v g" id="kA">—</div></div>
+    <div class="kpi" id="kpi-relance" onclick="toggleKpi('relance')">
+      <div class="kpi-l">À relancer</div><div class="kpi-v a" id="kR">—</div><div class="kpi-s">&gt; 2/3 de l'intervalle</div></div>
+    <div class="kpi" id="kpi-churn" onclick="toggleKpi('churn')">
+      <div class="kpi-l">Risque churn</div><div class="kpi-v" style="color:#7f1d1d" id="kC">—</div><div class="kpi-s">&gt; 1× l'intervalle</div></div>
+    <div class="kpi" id="kpi-out" onclick="toggleKpi('out')">
+      <div class="kpi-l">Out</div><div class="kpi-v o" id="kO">—</div><div class="kpi-s">&gt; 3× (ou override)</div></div>
+    <div class="kpi">
+      <div class="kpi-l">Volume ce mois</div><div class="kpi-v g" id="kV">—</div><div class="kpi-s">kg estimés</div></div>
+  </div>
+
+  <div class="alert" id="alertBox"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="tabs">
+        <button class="tab on" data-tab="clients" onclick="setTab(this)">Clients <span class="tc" id="tc-a">0</span></button>
+        <button class="tab" data-tab="produits" onclick="setTab(this)">Produits</button>
+      </div>
+    </div>
+
+    <div class="toolbar" id="tb-clients">
+      <input type="text" id="srch" placeholder="Rechercher un client…" oninput="render()">
+      <div class="ms">
+        <div class="ms-lbl">Catégorie</div>
+        <div class="chips" id="catChips">
+          <span class="chip cat-actif" data-cat="actif" onclick="toggleChip(this)">Actif</span>
+          <span class="chip cat-relance" data-cat="relance" onclick="toggleChip(this)">À relancer</span>
+          <span class="chip cat-churn on" data-cat="churn" onclick="toggleChip(this)">Risque churn</span>
+          <span class="chip cat-out" data-cat="out" onclick="toggleChip(this)">Out</span>
+        </div>
+      </div>
+      <select class="sort-sel" id="sortB" style="display:none" onchange="render()">
+        <option value="days">jours</option>
+        <option value="vol">volume</option>
+        <option value="name">nom</option>
+        <option value="freq">fréquence</option>
+        <option value="orders">commandes</option>
+        <option value="ratio">ratio</option>
+      </select>
+    </div>
+
+    <div class="toolbar" id="tb-produits" style="display:none">
+      <div class="ms">
+        <div class="ms-lbl">Filtrer les produits</div>
+        <div class="chips" id="prodChips"></div>
+      </div>
+    </div>
+
+    <div class="tw" id="tw"></div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Volume mensuel estimé (kg)</h3>
+    <div style="position:relative;width:100%;height:200px">
+      <canvas id="vc" role="img" aria-label="Volume mensuel en kg">Volume mensuel</canvas>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov" onclick="closePanel()"></div>
+<div class="panel" id="pnl">
+  <div class="ph">
+    <div><div class="pt" id="pTitle"></div><div class="ps" id="pSub"></div></div>
+    <button class="px" onclick="closePanel()">✕</button>
+  </div>
+  <div class="pb" id="pBody"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIG — ajouter un produit : { n: 'Nom', re: /regex/i }
+const SHEET_ID = '1EV1bxjAvR2aMTY3dy7OWhf9pHdv0Xjj2tipPdEhgCEU';
+const PRODS = [
+  {n:'Gaitania',re:/gaitania/i},{n:'Simeti',re:/simeti/i},{n:'Samba',re:/samba/i},
+  {n:'San Pedro',re:/san pedro/i},{n:'Blend',re:/\bblend\b/i},{n:'Guji',re:/guji/i},
+  {n:'Bourbon',re:/bourbon/i},{n:'Caturra',re:/caturra/i},{n:'Décaféiné',re:/d[eé]ca/i},
+  {n:'Oromo',re:/oromo/i},{n:'Tabi',re:/\btabi\b/i},{n:'Caracoli',re:/caracoli/i},
+  {n:'Huila',re:/huila/i},{n:'Salomon',re:/salomon/i},{n:'Makhoré',re:/makhor/i},
+  {n:'Caballero',re:/caballero/i},{n:'Woreda',re:/woreda/i},
+  {n:'Matcha',re:/matcha/i},{n:'Chai',re:/\bchai\b/i},
+];
+// ══════════════════════════════════════════════════════════
+
+const OUT_KEY = 'terrah_out_v3';
+const REFRESH = 5*60*1000;
+
+let orders=[], clients=[], curTab='clients', chartInst=null;
+let sortCol='days', sortDir=1; // sortDir: 1=desc, -1=asc
+let outSet = new Set(JSON.parse(localStorage.getItem(OUT_KEY)||'[]'));
+
+// ── LOAD ─────────────────────────────────────────────────
+async function loadData(){
+  setSync('spin','Synchronisation…');
+  try{
+    const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`);
+    if(!r.ok) throw new Error(r.status);
+    parseSheet(await r.text());
+    buildClients();
+    renderKPIs();
+    buildProdChips();
+    render();
+    renderChart();
+    setSync('ok','Mis à jour '+hhMM(new Date()));
+  }catch(e){setSync('err','Erreur de connexion');console.error(e);}
+}
+function setSync(c,t){document.getElementById('dot').className='dot '+(c!='ok'?c:'');document.getElementById('syncTxt').textContent=t;}
+
+// ── PARSE ────────────────────────────────────────────────
+// cols: 0=date cde | 1=date livraison | 2=Client | 3=Commande | 4..=flags
+function parseSheet(csv){
+  orders=[];
+  const rows=csvSplit(csv);
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r||r.length<3) continue;
+    const ds=r[0], cl=r[2], ot=r[3]||'';
+    if(!ds||!cl) continue;
+    const d=toDate(ds);
+    if(!d) continue;
+    orders.push({date:d,client:cl.trim(),orderText:ot.trim(),kg:exKg(ot)});
+  }
+}
+
+function csvSplit(txt){
+  const rows=[];let row=[],cur='',inQ=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){row.push(cur.trim());cur='';}
+    else if((c==='\n'||c==='\r')&&!inQ){
+      if(c==='\r'&&txt[i+1]==='\n')i++;
+      row.push(cur.trim());rows.push(row);row=[];cur='';
+    }else cur+=c;
+  }
+  if(cur||row.length){row.push(cur.trim());rows.push(row);}
+  return rows;
+}
+
+function toDate(s){const p=s.split('/');if(p.length!==3)return null;let[d,m,y]=p;if(y.length===2)y='20'+y;const dt=new Date(+y,+m-1,+d);return isNaN(dt)?null:dt;}
+
+// Total kg in an order string (sum all "Xkg" occurrences)
+function exKg(s){
+  let tot=0;
+  const re=/(\d+(?:[.,]\d+)?)\s*kg/gi;
+  let m;while((m=re.exec(s))!==null)tot+=parseFloat(m[1].replace(',','.'));
+  return tot;
+}
+
+// Split order text into product segments.
+// Strategy: split on ", " first, then split again on boundaries like
+// " + " or a digit following non-digit non-space text (e.g. "9kg Simeti 6kg Samba").
+// Returns array of segments, each containing at most one product.
+function splitSegments(s){
+  // First split on comma or " + "
+  const parts=s.split(/,\s*|\s+\+\s+/);
+  const segs=[];
+  parts.forEach(p=>{
+    p=p.trim();
+    // Further split if multiple "Xkg" in same segment (e.g. "9kg Simeti 6kg Samba")
+    // We split before each digit-sequence that is preceded by a letter/space
+    const sub=p.split(/(?<=\D)\s+(?=\d)/);
+    sub.forEach(s2=>{ if(s2.trim()) segs.push(s2.trim()); });
+  });
+  return segs;
+}
+
+// kg for a specific segment
+function segKg(seg){
+  const m=seg.match(/(\d+(?:[.,]\d+)?)\s*kg/i);
+  return m?parseFloat(m[1].replace(',','.')):0;
+}
+
+function mkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+
+// Aggressive normalization: lowercase, strip accents, collapse spaces, remove trailing punctuation
+function nkey(s){
+  return (s||'')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')  // strip accents
+    .replace(/['''`]/g,'')                              // apostrophes
+    .replace(/[-–—]/g,' ')                              // dashes to space
+    .replace(/\s+/g,' ')                                // collapse spaces
+    .trim();
+}
+
+// Manual alias table — if sheet has inconsistent spellings, add here:
+// { canonical_nkey: [alias1_nkey, alias2_nkey] }
+const ALIASES = {
+  'book nook': ['book nook ','booknook'],
+  'onisuko': ['onisuko paris 6','onisuko turenne','onisuko colombier','onisuko vieux colombier'],
+  'maurice cafe': ['maurice cafe ','cafe maurice'],
+  'oh vin dieu': ['oh vin dieu '],
+  'joho': ['joho ','joho  '],
+  'bistrot rougemont': ['bistrot routemont','bistrot rouge mont'],
+  'allday': ['allday timbaud','allday poissoniere','allday trudaine','allday teheran'],
+  'yora galeries': ['yora galeries '],
+  'momen': ['momen '],
+  'cesam': ['cesam '],
+};
+// Build reverse lookup: alias -> canonical
+const ALIAS_MAP = {};
+Object.entries(ALIASES).forEach(([canon, aliases]) => {
+  aliases.forEach(a => { ALIAS_MAP[nkey(a)] = canon; });
+});
+
+function resolveKey(s){
+  const k = nkey(s);
+  return ALIAS_MAP[k] || k;
+}
+
+function avg(a){return a.reduce((s,x)=>s+x,0)/a.length;}
+
+// ── BUILD CLIENTS ─────────────────────────────────────────
+function buildClients(){
+  const today=new Date(),map={};
+  orders.forEach(o=>{
+    const k=resolveKey(o.client);
+    if(!map[k])map[k]={name:o.client,key:k,orders:[]};
+    // Keep the most "complete" name (longest, non-trailing-space)
+    if(o.client.trim().length > map[k].name.trim().length) map[k].name=o.client.trim();
+    map[k].orders.push(o);
+  });
+  clients=Object.values(map).map(c=>{
+    c.orders.sort((a,b)=>a.date-b.date);
+    const last=c.orders[c.orders.length-1],first=c.orders[0];
+    const ds=Math.floor((today-last.date)/86400000);
+    const kg=c.orders.reduce((s,o)=>s+o.kg,0);
+    const gaps=[];
+    for(let i=1;i<c.orders.length;i++)gaps.push((c.orders[i].date-c.orders[i-1].date)/86400000);
+    const avgI=gaps.length?avg(gaps):null;
+    const recI=gaps.length?avg(gaps.slice(-3)):avgI;
+    const ivl=recI||avgI;
+    const manOut=outSet.has(c.key);
+    const single=c.orders.length===1;
+    let status='actif';
+    if(manOut){status='out';}
+    else if(single){
+      if(ds>=60)      status='out';
+      else if(ds>=31) status='churn';
+      else if(ds>=21) status='relance';
+    } else if(ivl){
+      // Ratio-based
+      if(ds>=ivl*3)        status='out';
+      else if(ds>=ivl)     status='churn';
+      else if(ds>=ivl*2/3) status='relance';
+      // Absolute override — escalate if absolute threshold is stricter
+      if(ds>=90  && status!=='out')   status='out';
+      else if(ds>=45 && status==='relance') status='churn';
+      else if(ds>=31 && status==='actif')   status='relance';
+    } else {
+      // No interval (single order already handled, but just in case)
+      if(ds>=90)      status='out';
+      else if(ds>=45) status='churn';
+      else if(ds>=31) status='relance';
+    }
+    const singleOrderOut=single&&ds>=60;
+    const bm={};
+    c.orders.forEach(o=>{const k=mkey(o.date);bm[k]=(bm[k]||0)+o.kg;});
+    return{key:c.key,name:c.name,orders:c.orders,lastOrder:last,firstOrder:first,
+      daysSince:ds,totalKg:kg,orderCount:c.orders.length,
+      avgInterval:avgI?Math.round(avgI):null,
+      relThr:single?21:(ivl?Math.round(ivl*2/3):null),
+      chuThr:single?31:(ivl?Math.round(ivl):null),
+      outThr:single?60:(ivl?Math.round(ivl*3):null),
+      ratio:ivl?ds/ivl:null,
+      status,byMonth:bm,isOut:status==='out',manualOut:manOut,singleOrderOut,single};
+  });
+  clients.sort((a,b)=>b.daysSince-a.daysSince);
+
+  // Debug: log client list with order count + last order date (open console to see)
+  if(new URLSearchParams(location.search).get('debug')==='1'){
+    console.table(clients.map(c=>({
+      nom:c.name, key:c.key, commandes:c.orderCount,
+      derniere:fd(c.lastOrder.date), jours:c.daysSince,
+      intervalle:c.avgInterval, statut:c.status
+    })));
+  }
+}
+
+// ── KPIs ──────────────────────────────────────────────────
+function renderKPIs(){
+  document.getElementById('kA').textContent=clients.filter(c=>c.status==='actif').length;
+  document.getElementById('kR').textContent=clients.filter(c=>c.status==='relance').length;
+  document.getElementById('kC').textContent=clients.filter(c=>c.status==='churn').length;
+  document.getElementById('kO').textContent=clients.filter(c=>c.status==='out').length;
+  const cm=mkey(new Date());
+  const vm=Math.round(orders.filter(o=>mkey(o.date)===cm).reduce((s,o)=>s+o.kg,0));
+  document.getElementById('kV').textContent=vm>0?vm.toLocaleString('fr'):'—';
+  document.getElementById('tc-a').textContent=clients.length;
+  const crit=clients.filter(c=>c.status==='churn'&&c.ratio&&c.ratio>=2);
+  const box=document.getElementById('alertBox');
+  if(crit.length){box.style.display='block';box.textContent='⚠ Churn critique (×2) : '+crit.slice(0,5).map(c=>c.name).join(', ')+(crit.length>5?'…':'');}
+  else box.style.display='none';
+}
+
+// ── KPI CLICK ─────────────────────────────────────────────
+function toggleKpi(cat){
+  const chip=document.querySelector('.chip[data-cat="'+cat+'"]');
+  if(chip)toggleChip(chip);
+}
+
+// ── CHIP TOGGLE ───────────────────────────────────────────
+function toggleChip(el){
+  el.classList.toggle('on');
+  const cat=el.dataset.cat;
+  if(cat){const k=document.getElementById('kpi-'+cat);if(k)k.classList.toggle('sel',el.classList.contains('on'));}
+  render();
+}
+
+function activeCats(){return[...document.querySelectorAll('#catChips .chip.on')].map(c=>c.dataset.cat);}
+function activeProds(){return[...document.querySelectorAll('#prodChips .chip.on')].map(c=>c.dataset.prod);}
+
+// ── PROD CHIPS ────────────────────────────────────────────
+function buildProdChips(){
+  const data=buildProdData();
+  const wrap=document.getElementById('prodChips');
+  wrap.innerHTML=PRODS.filter(p=>data[p.n]&&data[p.n].total>0)
+    .map(p=>'<span class="chip prod" data-prod="'+esc(p.n)+'" onclick="toggleChip(this)">'+esc(p.n)+'</span>').join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function setTab(btn){
+  curTab=btn.dataset.tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b===btn));
+  document.getElementById('tb-clients').style.display=curTab==='clients'?'flex':'none';
+  document.getElementById('tb-produits').style.display=curTab==='produits'?'flex':'none';
+  render();
+}
+
+// ── SORT ──────────────────────────────────────────────────
+function setSort(col){
+  if(sortCol===col) sortDir*=-1;
+  else { sortCol=col; sortDir=1; }
+  render();
+}
+
+function thSort(col,label){
+  const active=sortCol===col;
+  const cls='sortable'+(active?(sortDir===1?' desc':' asc'):'');
+  return '<th class="'+cls+'" onclick="setSort(\''+col+'\')">'+label+'</th>';
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render(){
+  if(curTab==='produits'){renderProduits();return;}
+  const srch=document.getElementById('srch').value.toLowerCase();
+  const cats=activeCats();
+  let list=clients.filter(c=>{
+    if(srch&&!c.name.toLowerCase().includes(srch))return false;
+    if(cats.length>0&&!cats.includes(c.status))return false;
+    return true;
+  });
+
+  // Sort by current column + direction
+  const D=sortDir;
+  if(sortCol==='days')   list.sort((a,b)=>D*(b.daysSince-a.daysSince));
+  else if(sortCol==='vol')    list.sort((a,b)=>D*(b.totalKg-a.totalKg));
+  else if(sortCol==='name')   list.sort((a,b)=>D*a.name.localeCompare(b.name,'fr'));
+  else if(sortCol==='freq')   list.sort((a,b)=>D*((a.avgInterval||9999)-(b.avgInterval||9999)));
+  else if(sortCol==='orders') list.sort((a,b)=>D*(b.orderCount-a.orderCount));
+  else if(sortCol==='avgmois'){
+    list.sort((a,b)=>{
+      const am=Math.max(1,Math.round((new Date()-a.firstOrder.date)/(1000*60*60*24*30.5)));
+      const bm=Math.max(1,Math.round((new Date()-b.firstOrder.date)/(1000*60*60*24*30.5)));
+      return D*((b.totalKg/bm)-(a.totalKg/am));
+    });
+  }
+  else if(sortCol==='ratio')  list.sort((a,b)=>D*((b.ratio||0)-(a.ratio||0)));
+  else if(sortCol==='date')   list.sort((a,b)=>D*(b.lastOrder.date-a.lastOrder.date));
+  else if(sortCol==='status') list.sort((a,b)=>{
+    const o={out:0,churn:1,relance:2,actif:3};
+    return D*((o[a.status]||3)-(o[b.status]||3));
+  });
+
+  const tw=document.getElementById('tw');
+  if(!list.length){tw.innerHTML='<div class="empty">Aucun client dans cette sélection</div>';return;}
+  const maxKg=Math.max(...list.map(c=>c.totalKg),1);
+  const rows=list.map(c=>{
+    const dc=c.status==='out'?'var(--t3)':c.status==='churn'?'#7f1d1d':c.status==='relance'?'var(--am)':'var(--t)';
+    const ratio=c.ratio?c.ratio.toFixed(1)+'×':'—';
+    const ancMois=Math.max(1,Math.round((new Date()-c.firstOrder.date)/(1000*60*60*24*30.5)));
+    const avgMois=(c.totalKg/ancMois).toFixed(1);
+    return '<tr class="'+(c.isOut?'is-out':'')+'">'+
+      '<td><div class="cname-link" style="font-weight:500'+(c.isOut?';text-decoration:line-through;color:var(--t3)':'')+'" onclick="openClientPanel(\''+c.key.replace(/'/g,"\\'")+'\')">'+esc(c.name)+'</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:1px">'+esc(trunc(c.lastOrder.orderText,40))+'</div></td>'+
+      '<td style="color:var(--t2);white-space:nowrap">'+fd(c.lastOrder.date)+'</td>'+
+      '<td><span style="font-weight:500;color:'+dc+'">'+c.daysSince+'j</span> <span style="font-size:11px;color:var(--t3)">('+ratio+')</span></td>'+
+      '<td style="color:var(--t2)">'+(c.avgInterval?c.avgInterval+'j':'—')+'</td>'+
+      '<td style="color:var(--t2)">'+(c.relThr?c.relThr+'j':'—')+'</td>'+
+      '<td>'+bdg(c)+'</td>'+
+      '<td><div class="bar-r"><div class="bar-bg"><div class="bar-f" style="width:'+Math.round(c.totalKg/maxKg*100)+'%;background:var(--gr)"></div></div>'+
+      '<span style="font-size:12px;min-width:44px;text-align:right;font-family:\'DM Mono\',monospace">'+Math.round(c.totalKg)+'&nbsp;kg</span></div></td>'+
+      '<td style="color:var(--t2);font-family:\'DM Mono\',monospace;font-size:12px">'+avgMois+'&nbsp;kg</td>'+
+      '<td style="color:var(--t3)">'+c.orderCount+'</td>'+
+      '<td><button class="tog '+(c.isOut?'on':'')+'" title="'+(c.isOut?'Réactiver':'Forcer out')+'" onclick="toggleOut(\''+c.key.replace(/'/g,"\\'")+'\')" ></button></td>'+
+      '</tr>';
+  }).join('');
+
+  const thead='<thead><tr>'+
+    thSort('name','Client')+
+    thSort('date','Dernière cde')+
+    thSort('days','Jours / ratio')+
+    thSort('freq','Intervalle')+
+    '<th>Seuil relance</th>'+
+    thSort('status','Statut')+
+    thSort('vol','Volume total')+
+    thSort('avgmois','Conso/mois')+
+    thSort('orders','Cdes')+
+    '<th>Out</th>'+
+  '</tr></thead>';
+
+  tw.innerHTML='<table>'+thead+'<tbody>'+rows+'</tbody></table>';
+}
+
+// ── PRODUITS ──────────────────────────────────────────────
+function buildProdData(){
+  const d={};
+  PRODS.forEach(p=>{d[p.n]={total:0,count:0,clients:{},byMonth:{}};});
+  orders.forEach(o=>{
+    const segs=splitSegments(o.orderText);
+    PRODS.forEach(p=>{
+      // Find segments that match this product
+      const matched=segs.filter(seg=>p.re.test(seg));
+      if(!matched.length)return;
+      // kg = sum of matched segments (or fallback to total order kg if no kg in segment)
+      const kg=matched.reduce((s,seg)=>s+segKg(seg),0)||o.kg;
+      const e=d[p.n];
+      e.total+=kg;e.count++;
+      const ck=resolveKey(o.client);
+      if(!e.clients[ck])e.clients[ck]={name:o.client,kg:0,count:0,firstDate:null,lastDate:null};
+      e.clients[ck].kg+=kg;e.clients[ck].count++;
+      if(!e.clients[ck].lastDate||o.date>e.clients[ck].lastDate)e.clients[ck].lastDate=o.date;
+      if(!e.clients[ck].firstDate||o.date<e.clients[ck].firstDate)e.clients[ck].firstDate=o.date;
+      const mk=mkey(o.date);e.byMonth[mk]=(e.byMonth[mk]||0)+kg;
+    });
+  });
+  return d;
+}
+
+function renderProduits(){
+  const data=buildProdData();
+  const ap=activeProds();
+  let list=Object.entries(data).filter(([n,v])=>v.total>0&&(ap.length===0||ap.includes(n))).sort((a,b)=>b[1].total-a[1].total);
+  const mx=list[0]?list[0][1].total:1;
+  const rows=list.map(([n,v])=>
+    '<tr class="prod-row" onclick="openPanel(\''+esc(n)+'\')">'+
+    '<td style="font-weight:500">'+esc(n)+'</td>'+
+    '<td style="font-weight:500;font-family:\'DM Mono\',monospace">'+Math.round(v.total).toLocaleString('fr')+' kg</td>'+
+    '<td style="color:var(--t2)">'+v.count+'</td>'+
+    '<td style="color:var(--t2)">'+Object.keys(v.clients).length+'</td>'+
+    '<td><div class="bar-r"><div class="bar-bg" style="min-width:100px"><div class="bar-f" style="width:'+Math.round(v.total/mx*100)+'%;background:var(--gr)"></div></div>'+
+    '<span style="font-size:11px;color:var(--t3);min-width:28px;text-align:right">'+Math.round(v.total/mx*100)+'%</span></div></td>'+
+    '<td class="prod-link">Voir détail →</td></tr>'
+  ).join('');
+  document.getElementById('tw').innerHTML='<table><thead><tr><th>Produit</th><th>Volume total</th><th>Commandes</th><th>Clients</th><th>Répartition</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t3)">Aucun produit sélectionné</td></tr>')+'</tbody></table>';
+  // Update chart to reflect selected products
+  renderChart(ap.length>0?ap:null);
+}
+
+// ── PANEL ─────────────────────────────────────────────────
+function openPanel(name){
+  const d=buildProdData()[name];if(!d)return;
+  document.getElementById('pTitle').textContent=name;
+  // Global monthly avg since first order of this product
+  const allDates=Object.values(d.clients).map(c=>c.firstDate).filter(Boolean);
+  const firstEver=allDates.length?new Date(Math.min(...allDates.map(x=>x.getTime()))):new Date();
+  const totalMonths=Math.max(1,Math.round((new Date()-firstEver)/(1000*60*60*24*30.5)));
+  const globalAvg=(d.total/totalMonths).toFixed(1);
+  document.getElementById('pSub').textContent=Math.round(d.total).toLocaleString('fr')+' kg total · moy. '+globalAvg+' kg/mois · '+d.count+' cdes · '+Object.keys(d.clients).length+' clients';
+  const today=new Date(),months=[];
+  for(let i=17;i>=0;i--){const dt=new Date(today.getFullYear(),today.getMonth()-i,1);months.push(mkey(dt));}
+  const mx=Math.max(...months.map(m=>d.byMonth[m]||0),1);
+  const mHTML=months.filter(m=>d.byMonth[m]>0).map(m=>{
+    const[y,mo]=m.split('-');
+    const lbl=['','jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'][+mo]+' '+y.slice(2);
+    const val=d.byMonth[m];
+    return '<div class="mrow"><span class="mlbl">'+lbl+'</span><div class="mbb"><div class="mbf" style="width:'+Math.round(val/mx*100)+'%"></div></div><span class="mv">'+Math.round(val)+' kg</span></div>';
+  }).join('');
+  const cl=Object.values(d.clients).sort((a,b)=>b.kg-a.kg);
+  const cHTML=cl.map(c=>{
+    const co=clients.find(x=>x.key===resolveKey(c.name));
+    // Monthly avg = total kg / nb months since first order of this client (min 1)
+    const firstDate=c.firstDate||c.lastDate;
+    const today=new Date();
+    const monthsSince=Math.max(1,Math.round((today-firstDate)/(1000*60*60*24*30.5)));
+    const avgMo=(c.kg/monthsSince).toFixed(1);
+    return '<div class="crow"><div><div class="cn">'+esc(c.name)+'</div>'+
+      '<div class="cm">'+c.count+' cde'+(c.count>1?'s':'')+' · depuis '+fd(firstDate)+' · moy. '+avgMo+' kg/mois</div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+(co?bdg(co):'')+
+      '<span class="cv" title="Total '+Math.round(c.kg)+' kg">'+avgMo+'&nbsp;kg/mois</span></div></div>';
+  }).join('');
+  document.getElementById('pBody').innerHTML='<div class="psect"><div class="pst">Volume par mois</div>'+(mHTML||'<div style="color:var(--t3);font-size:13px">Aucune donnée</div>')+'</div><div class="psect"><div class="pst">Clients ('+cl.length+')</div>'+cHTML+'</div>';
+  document.getElementById('ov').classList.add('open');
+  document.getElementById('pnl').classList.add('open');
+}
+// ── CLIENT PANEL ──────────────────────────────────────────
+function openClientPanel(key){
+  const c=clients.find(x=>x.key===key); if(!c) return;
+
+  // Produits phares — build from orders
+  const prodTotals={};
+  const data=buildProdData();
+  PRODS.forEach(p=>{
+    const e=data[p.n];
+    if(e&&e.clients[key]){
+      prodTotals[p.n]=e.clients[key].kg;
+    }
+  });
+  const topProds=Object.entries(prodTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+
+  // Ancienneté
+  const ancMois=Math.round((new Date()-c.firstOrder.date)/(1000*60*60*24*30.5));
+  const ancStr=ancMois>=12?Math.floor(ancMois/12)+'a '+(ancMois%12)+'m':ancMois+'m';
+
+  // Fréquence réelle
+  const freqStr=c.avgInterval?'tous les ~'+c.avgInterval+'j':'1 commande';
+
+  // Volume moyen par commande
+  const avgCmd=c.orderCount>0?Math.round(c.totalKg/c.orderCount):0;
+
+  // Mois actifs
+  const moisActifs=Object.keys(c.byMonth).length;
+  const avgMensuel=moisActifs>0?(c.totalKg/Math.max(1,ancMois)).toFixed(1):0;
+
+  document.getElementById('pTitle').textContent=c.name;
+  document.getElementById('pSub').textContent=bdgText(c)+' · depuis '+fd(c.firstOrder.date);
+
+  // Produits phares max bar
+  const maxP=topProds[0]?topProds[0][1]:1;
+  const prodsHTML=topProds.length?topProds.slice(0,6).map(([n,kg])=>
+    '<div class="cp-prod-row">'+
+    '<div>'+
+    '<div style="font-weight:500;font-size:13px">'+esc(n)+'</div>'+
+    '<div class="mrow" style="margin:4px 0 0;gap:6px">'+
+    '<div class="mbb" style="flex:1;max-width:120px"><div class="mbf" style="width:'+Math.round(kg/maxP*100)+'%"></div></div>'+
+    '</div></div>'+
+    '<span style="font-size:12px;font-family:\'DM Mono\',monospace;color:var(--t2)">'+Math.round(kg)+' kg</span>'+
+    '</div>'
+  ).join(''):'<div style="color:var(--t3);font-size:13px">Aucun produit identifié</div>';
+
+  // Historique récent (last 8 orders)
+  const recent=[...c.orders].reverse().slice(0,8);
+  const histHTML=recent.map(o=>
+    '<div class="cp-hist-row">'+
+    '<span class="cp-hist-date">'+fd(o.date)+'</span>'+
+    '<span class="cp-hist-text">'+esc(o.orderText||'—')+'</span>'+
+    '<span style="font-size:11px;font-family:\'DM Mono\',monospace;color:var(--t3);flex-shrink:0">'+Math.round(o.kg)+'kg</span>'+
+    '</div>'
+  ).join('');
+
+  document.getElementById('pBody').innerHTML=
+    '<div class="cp-stat">'+
+      '<div class="cp-kpi"><div class="cp-kpi-l">Ancienneté</div><div class="cp-kpi-v">'+ancStr+'</div></div>'+
+      '<div class="cp-kpi"><div class="cp-kpi-l">Fréquence</div><div class="cp-kpi-v" style="font-size:14px;padding-top:3px">'+freqStr+'</div></div>'+
+      '<div class="cp-kpi"><div class="cp-kpi-l">Volume total</div><div class="cp-kpi-v">'+Math.round(c.totalKg)+' kg</div></div>'+
+      '<div class="cp-kpi"><div class="cp-kpi-l">Moy. mensuelle</div><div class="cp-kpi-v">'+avgMensuel+' kg</div></div>'+
+      '<div class="cp-kpi"><div class="cp-kpi-l">Moy. / commande</div><div class="cp-kpi-v">'+avgCmd+' kg</div></div>'+
+      '<div class="cp-kpi"><div class="cp-kpi-l">Nb commandes</div><div class="cp-kpi-v">'+c.orderCount+'</div></div>'+
+    '</div>'+
+    '<div class="psect"><div class="pst">Produits phares</div>'+prodsHTML+'</div>'+
+    '<div class="psect"><div class="pst">Dernières commandes</div>'+histHTML+'</div>';
+
+  document.getElementById('ov').classList.add('open');
+  document.getElementById('pnl').classList.add('open');
+}
+
+function bdgText(c){if(c.status==='out')return'Out';if(c.status==='churn')return'Risque churn';if(c.status==='relance')return'À relancer';return'Actif';}
+
+function closePanel(){document.getElementById('ov').classList.remove('open');document.getElementById('pnl').classList.remove('open');}
+
+
+// ── TOGGLE OUT ────────────────────────────────────────────
+function toggleOut(key){
+  if(outSet.has(key))outSet.delete(key);else outSet.add(key);
+  localStorage.setItem(OUT_KEY,JSON.stringify([...outSet]));
+  buildClients();renderKPIs();render();
+}
+
+// ── CHART ─────────────────────────────────────────────────
+function renderChart(prodFilter){
+  const bm={};
+  if(prodFilter&&prodFilter.length>0){
+    // Build combined monthly volumes for selected products only
+    const data=buildProdData();
+    prodFilter.forEach(pn=>{
+      const d=data[pn]; if(!d) return;
+      Object.entries(d.byMonth).forEach(([k,v])=>{ bm[k]=(bm[k]||0)+v; });
+    });
+  } else {
+    orders.forEach(o=>{const k=mkey(o.date);bm[k]=(bm[k]||0)+o.kg;});
+  }
+  const keys=Object.keys(bm).sort().filter(k=>k>='2025-01');
+  const labels=keys.map(k=>{const[y,m]=k.split('-');return['','jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'][+m]+' '+y.slice(2);});
+  const data=keys.map(k=>Math.round(bm[k]));
+  const title=prodFilter&&prodFilter.length>0?prodFilter.join(', '):'Tous produits';
+  document.querySelector('.chart-card h3').textContent='Volume mensuel — '+title;
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  chartInst=new Chart(document.getElementById('vc').getContext('2d'),{
+    type:'bar',data:{labels,datasets:[{label:'kg',data,backgroundColor:'#c5dba8',borderColor:'#4a7c26',borderWidth:1,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>Math.round(c.raw).toLocaleString('fr')+' kg'}}},
+      scales:{x:{ticks:{font:{size:11},autoSkip:false,maxRotation:45},grid:{display:false}},y:{ticks:{font:{size:11},callback:v=>v.toLocaleString('fr')+' kg'},grid:{color:'rgba(0,0,0,.04)'}}}}
+  });
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function bdg(c){if(c.status==='out'){const lbl=c.singleOrderOut?'Out (1 cde)':c.manualOut?'Out (manuel)':'Out';return'<span class="bdg bx">'+lbl+'</span>';}if(c.status==='churn')return'<span class="bdg bch">Churn</span>';if(c.status==='relance')return'<span class="bdg ba">À relancer</span>';return'<span class="bdg bg">Actif</span>';}
+function fd(d){if(!d)return'—';return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+function hhMM(d){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function trunc(s,n){return s&&s.length>n?s.slice(0,n)+'…':(s||'');}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+loadData();
+setInterval(loadData,REFRESH);
+</script>
+</body>
+</html>
