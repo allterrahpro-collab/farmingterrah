@@ -127,7 +127,7 @@ thead th.sortable.desc::after{content:' ↓';color:var(--gr)}
     <div class="kpi" id="kpi-actif" onclick="toggleKpi('actif')">
       <div class="kpi-l">Clients actifs</div><div class="kpi-v g" id="kA">—</div></div>
     <div class="kpi" id="kpi-relance" onclick="toggleKpi('relance')">
-      <div class="kpi-l">À relancer</div><div class="kpi-v a" id="kR">—</div><div class="kpi-s">&gt; 2/3 de l'intervalle</div></div>
+      <div class="kpi-l">À relancer</div><div class="kpi-v a" id="kR">—</div><div class="kpi-s">&gt; 86% de l'intervalle</div></div>
     <div class="kpi" id="kpi-churn" onclick="toggleKpi('churn')">
       <div class="kpi-l">Risque churn</div><div class="kpi-v" style="color:#7f1d1d" id="kC">—</div><div class="kpi-s">&gt; 1× l'intervalle</div></div>
     <div class="kpi" id="kpi-out" onclick="toggleKpi('out')">
@@ -371,7 +371,7 @@ function buildClients(){
       // Ratio-based
       if(ds>=ivl*3)        status='out';
       else if(ds>=ivl)     status='churn';
-      else if(ds>=ivl*2/3) status='relance';
+      else if(ds>=ivl*0.86) status='relance';
       // Absolute override — escalate if absolute threshold is stricter
       if(ds>=90  && status!=='out')   status='out';
       else if(ds>=45 && status==='relance') status='churn';
@@ -388,7 +388,7 @@ function buildClients(){
     return{key:c.key,name:c.name,orders:c.orders,lastOrder:last,firstOrder:first,
       daysSince:ds,totalKg:kg,orderCount:c.orders.length,
       avgInterval:avgI?Math.round(avgI):null,
-      relThr:single?21:(ivl?Math.round(ivl*2/3):null),
+      relThr:single?21:(ivl?Math.round(ivl*0.86):null),
       chuThr:single?31:(ivl?Math.round(ivl):null),
       outThr:single?60:(ivl?Math.round(ivl*3):null),
       ratio:ivl?ds/ivl:null,
