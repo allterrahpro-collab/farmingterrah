@@ -677,6 +677,21 @@ function openClientPanel(key){
     '</div>'
   ).join('');
 
+  // Consommation mensuelle depuis la première commande
+  const cmMoLbl=['','jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const cmToday=new Date();
+  const cmMonths=[];
+  let cmCur=new Date(c.firstOrder.date.getFullYear(),c.firstOrder.date.getMonth(),1);
+  const cmEnd=new Date(cmToday.getFullYear(),cmToday.getMonth(),1);
+  while(cmCur<=cmEnd){cmMonths.push(mkey(cmCur));cmCur=new Date(cmCur.getFullYear(),cmCur.getMonth()+1,1);}
+  const cmMax=Math.max(...cmMonths.map(m=>c.byMonth[m]||0),1);
+  const cmHTML=cmMonths.map(m=>{
+    const[y,mo]=m.split('-');
+    const lbl=cmMoLbl[+mo]+' '+y.slice(2);
+    const val=c.byMonth[m]||0;
+    return '<div class="mrow"><span class="mlbl">'+lbl+'</span><div class="mbb"><div class="mbf" style="width:'+Math.round(val/cmMax*100)+'%"></div></div><span class="mv">'+Math.round(val)+' kg</span></div>';
+  }).join('');
+
   document.getElementById('pBody').innerHTML=
     '<div class="cp-stat">'+
       '<div class="cp-kpi"><div class="cp-kpi-l">Ancienneté</div><div class="cp-kpi-v">'+ancStr+'</div></div>'+
@@ -686,6 +701,7 @@ function openClientPanel(key){
       '<div class="cp-kpi"><div class="cp-kpi-l">Moy. / commande</div><div class="cp-kpi-v">'+avgCmd+' kg</div></div>'+
       '<div class="cp-kpi"><div class="cp-kpi-l">Nb commandes</div><div class="cp-kpi-v">'+c.orderCount+'</div></div>'+
     '</div>'+
+    '<div class="psect"><div class="pst">Consommation mensuelle</div>'+cmHTML+'</div>'+
     '<div class="psect"><div class="pst">Produits phares</div>'+prodsHTML+'</div>'+
     '<div class="psect"><div class="pst">Dernières commandes</div>'+histHTML+'</div>';
 
