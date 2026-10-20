@@ -623,8 +623,43 @@ function openPanel(name){
   document.getElementById('pnl').classList.add('open');
 }
 // ── CLIENT PANEL ──────────────────────────────────────────
+let curClientKey=null, consoScale='month';
+const CONSO_MOLBL=['','jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+
+// Agrège la conso mensuelle (c.byMonth) en buckets selon l'échelle choisie
+function consoBuckets(c,scale){
+  const first=new Date(c.firstOrder.date.getFullYear(),c.firstOrder.date.getMonth(),1);
+  const today=new Date();
+  const end=new Date(today.getFullYear(),today.getMonth(),1);
+  const buckets=[],index={};
+  let cur=new Date(first);
+  while(cur<=end){
+    const y=cur.getFullYear(),m=cur.getMonth();
+    const val=c.byMonth[mkey(cur)]||0;
+    let bkey,lbl;
+    if(scale==='month'){bkey=y+'-'+m;lbl=CONSO_MOLBL[m+1]+' '+String(y).slice(2);}
+    else if(scale==='quarter'){const q=Math.floor(m/3)+1;bkey=y+'-Q'+q;lbl='T'+q+' '+String(y).slice(2);}
+    else if(scale==='semester'){const sm=m<6?1:2;bkey=y+'-S'+sm;lbl='S'+sm+' '+String(y).slice(2);}
+    else {bkey=''+y;lbl=''+y;}
+    if(index[bkey]===undefined){index[bkey]=buckets.length;buckets.push({label:lbl,val:0});}
+    buckets[index[bkey]].val+=val;
+    cur=new Date(y,m+1,1);
+  }
+  return buckets;
+}
+
+function renderConso(){
+  const c=clients.find(x=>x.key===curClientKey);
+  const box=document.getElementById('consoList');
+  if(!c||!box)return;
+  const b=consoBuckets(c,consoScale);
+  const mx=Math.max(...b.map(x=>x.val),1);
+  box.innerHTML=b.map(x=>'<div class="mrow"><span class="mlbl">'+x.label+'</span><div class="mbb"><div class="mbf" style="width:'+Math.round(x.val/mx*100)+'%"></div></div><span class="mv">'+Math.round(x.val)+' kg</span></div>').join('');
+}
+
 function openClientPanel(key){
   const c=clients.find(x=>x.key===key); if(!c) return;
+  curClientKey=key;
 
   // Produits phares — build from orders
   const prodTotals={};
@@ -677,21 +712,6 @@ function openClientPanel(key){
     '</div>'
   ).join('');
 
-  // Consommation mensuelle depuis la première commande
-  const cmMoLbl=['','jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
-  const cmToday=new Date();
-  const cmMonths=[];
-  let cmCur=new Date(c.firstOrder.date.getFullYear(),c.firstOrder.date.getMonth(),1);
-  const cmEnd=new Date(cmToday.getFullYear(),cmToday.getMonth(),1);
-  while(cmCur<=cmEnd){cmMonths.push(mkey(cmCur));cmCur=new Date(cmCur.getFullYear(),cmCur.getMonth()+1,1);}
-  const cmMax=Math.max(...cmMonths.map(m=>c.byMonth[m]||0),1);
-  const cmHTML=cmMonths.map(m=>{
-    const[y,mo]=m.split('-');
-    const lbl=cmMoLbl[+mo]+' '+y.slice(2);
-    const val=c.byMonth[m]||0;
-    return '<div class="mrow"><span class="mlbl">'+lbl+'</span><div class="mbb"><div class="mbf" style="width:'+Math.round(val/cmMax*100)+'%"></div></div><span class="mv">'+Math.round(val)+' kg</span></div>';
-  }).join('');
-
   document.getElementById('pBody').innerHTML=
     '<div class="cp-stat">'+
       '<div class="cp-kpi"><div class="cp-kpi-l">Ancienneté</div><div class="cp-kpi-v">'+ancStr+'</div></div>'+
@@ -701,10 +721,15 @@ function openClientPanel(key){
       '<div class="cp-kpi"><div class="cp-kpi-l">Moy. / commande</div><div class="cp-kpi-v">'+avgCmd+' kg</div></div>'+
       '<div class="cp-kpi"><div class="cp-kpi-l">Nb commandes</div><div class="cp-kpi-v">'+c.orderCount+'</div></div>'+
     '</div>'+
-    '<div class="psect"><div class="pst">Consommation mensuelle</div>'+cmHTML+'</div>'+
+    '<div class="psect"><div class="pst" style="display:flex;justify-content:space-between;align-items:center;gap:8px">Consommation'+
+      '<select id="consoScale" onchange="consoScale=this.value;renderConso()" style="font-family:inherit;font-size:11px;padding:3px 6px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t2);text-transform:none;letter-spacing:0;cursor:pointer">'+
+        '<option value="month">Mensuelle</option><option value="quarter">Trimestrielle</option><option value="semester">Semestrielle</option><option value="year">Annuelle</option>'+
+      '</select></div><div id="consoList"></div></div>'+
     '<div class="psect"><div class="pst">Produits phares</div>'+prodsHTML+'</div>'+
     '<div class="psect"><div class="pst">Dernières commandes</div>'+histHTML+'</div>';
 
+  document.getElementById('consoScale').value=consoScale;
+  renderConso();
   document.getElementById('ov').classList.add('open');
   document.getElementById('pnl').classList.add('open');
 }
